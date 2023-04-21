@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using EMBC.ESS.Resources.Reports;
 
 namespace EMBC.ESS.Resources.Payments
 {
@@ -9,6 +10,8 @@ namespace EMBC.ESS.Resources.Payments
         Task<ManagePaymentResponse> Manage(ManagePaymentRequest request);
 
         Task<QueryPaymentResponse> Query(QueryPaymentRequest request);
+
+        Task<QueryPaymentResponse> QueryAll(QueryPaymentRequest request);
     }
 
     public abstract class ManagePaymentRequest
@@ -83,9 +86,21 @@ namespace EMBC.ESS.Resources.Payments
         public QueueStatus? ByQueueStatus { get; set; }
     }
 
+    public class SearchAllPaymentRequest : QueryPaymentRequest
+    {
+        public PaymentStatus? ByStatus { get; set; }
+        public int? LimitNumberOfItems { get; set; }
+    }
+
     public class SearchPaymentResponse : QueryPaymentResponse
     {
         public IEnumerable<Payment> Items { get; set; } = Array.Empty<Payment>();
+    }
+
+    public class SearchAllPaymentResponse : QueryPaymentResponse
+    {
+        //public IEnumerable<Payment> Items { get; set; } = Array.Empty<Payment>();
+        public IEnumerable<EpaymentReport> Items { get; set; } = Array.Empty<EpaymentReport>();
     }
 
     public class IssuePaymentsBatchRequest : ManagePaymentRequest

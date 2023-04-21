@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
+using EMBC.ESS.Shared.Contracts.Events;
 using EMBC.ESS.Shared.Contracts.Reports;
+using EMBC.ESS.Shared.Contracts.Teams;
 using EMBC.Responders.API.Helpers;
 using EMBC.Utilities.Messaging;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EMBC.Responders.API.Controllers
@@ -18,11 +23,13 @@ namespace EMBC.Responders.API.Controllers
 
         private string currentUserRole => User.FindFirstValue("user_role");
         private readonly ErrorParser errorParser;
+        private readonly IMapper mapper;
 
-        public ReportsController(IMessagingClient messagingClient)
+        public ReportsController(IMessagingClient messagingClient, IMapper mapper)
         {
             this.messagingClient = messagingClient;
             this.errorParser = new ErrorParser();
+            this.mapper = mapper;
         }
 
         [HttpPost("evacuee")]
@@ -89,6 +96,20 @@ namespace EMBC.Responders.API.Controllers
             {
                 return errorParser.Parse(e);
             }
+        }
+
+        /// <summary>
+        /// Get 3cmb report
+        /// </summary>
+        /// <returns>list of epayment transactions</returns>
+        [HttpGet("3cmb")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> Get3cmbReport()
+        {
+            //var response = await client.Send(new TeamMembersQuery { TeamId = teamId, IncludeActiveUsersOnly = false });
+            var response = await messagingClient.Send(new PaymentReportQuery { Date = "01/01/2023" });
+            return new FileContentResult(response.Content, response.ContentType);
+            //return Ok(mapper.Map<TeamMember>(response));
         }
     }
 }

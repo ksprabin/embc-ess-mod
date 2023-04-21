@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using EMBC.ESS.Resources.Reports;
 using EMBC.ESS.Utilities.Cas;
 using EMBC.ESS.Utilities.Dynamics;
 using EMBC.ESS.Utilities.Dynamics.Microsoft.Dynamics.CRM;
@@ -44,6 +45,15 @@ namespace EMBC.ESS.Resources.Payments
         request switch
         {
             SearchPaymentRequest r => await Handle(r, CreateCancellationToken()),
+            GetCasPaymentStatusRequest r => await Handle(r, CreateCancellationToken()),
+
+            _ => throw new NotSupportedException($"type {request.GetType().Name}")
+        };
+
+        public async Task<QueryPaymentResponse> QueryAll(QueryPaymentRequest request) =>
+        request switch
+        {
+            SearchAllPaymentRequest r => await Handle(r, CreateCancellationToken()),
             GetCasPaymentStatusRequest r => await Handle(r, CreateCancellationToken()),
 
             _ => throw new NotSupportedException($"type {request.GetType().Name}")
@@ -134,6 +144,38 @@ namespace EMBC.ESS.Resources.Payments
             ctx.DetachAll();
 
             return new SearchPaymentResponse { Items = mapper.Map<IEnumerable<Payment>>(payments).ToArray() };
+        }
+
+        private async Task<SearchAllPaymentResponse> Handle(SearchAllPaymentRequest request, CancellationToken ct)
+        {
+            if (!request.ByStatus.HasValue)
+                throw new ArgumentException("Payments query must have at least one criteria", nameof(request));
+
+            var ctx = essContextFactory.CreateReadOnly();
+
+            IEnumerable<era_etransfertransaction> payments = Array.Empty<era_etransfertransaction>();
+
+            IQueryable<era_etransfertransaction> query = ctx.era_etransfertransactions
+                    .Expand(c => c.era_Payee_contact)
+                    .Expand(c => c.era_era_etransfertransaction_era_evacueesuppo)
+                    .AsQueryable();
+            if (request.ByStatus.HasValue) query = query.Where(tx => tx.statuscode == (int)request.ByStatus.Value);
+            query = query.OrderBy(q => q.createdon);
+            if (request.LimitNumberOfItems.HasValue) query = query.Take(request.LimitNumberOfItems.Value);
+
+            //var respayments = (await query.GetAllPagesAsync(ct)).ToArray();
+            payments = (await query.GetAllPagesAsync(ct)).ToArray();
+            await Parallel.ForEachAsync(payments, ct, async (tx, ct) =>
+            {
+                ctx.AttachTo(nameof(EssContext.era_etransfertransactions), tx);
+                await ctx.LoadPropertyAsync(tx, nameof(era_etransfertransaction.era_era_evacueesupport_era_etransfertransacti), ct);
+            });
+
+            ctx.DetachAll();
+
+            var resList = new SearchAllPaymentResponse { Items = mapper.Map<IEnumerable<EpaymentReport>>(payments).ToArray() };
+
+            return new SearchAllPaymentResponse { Items = mapper.Map<IEnumerable<EpaymentReport>>(payments).ToArray() };
         }
 
         private async Task<IssuePaymentsBatchResponse> Handle(IssuePaymentsBatchRequest request, CancellationToken ct)

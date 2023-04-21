@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Xml.Linq;
 
 namespace EMBC.ESS.Shared.Contracts.Reports
 {
@@ -10,6 +13,18 @@ namespace EMBC.ESS.Shared.Contracts.Reports
     public class SupportReportQuery : Query<ReportQueryResult>
     {
         public string ReportRequestId { get; set; }
+    }
+
+    public class PaymentReportQuery : Query<ReportQueryResponse>
+    {
+        public string Date { get; set; }
+        public string EndDate { get; set; }
+    }
+
+    public class ReportQueryResponse
+    {
+        public string ContentType { get; set; }
+        public byte[] Content { get; set; }
     }
 
     public class ReportQueryResult

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using EMBC.ESS.Shared.Contracts;
 
 namespace EMBC.ESS.Resources.Reports
 {
@@ -350,6 +351,81 @@ namespace EMBC.ESS.Resources.Reports
 
         [Display(Name = "Lodging Email Address")]
         public string LodgingEmail { get; set; }
+    }
+
+    public class EpaymentReport : Event
+    {
+        [Display(Name = "Transaction Id")]
+        public string TransactionId { get; set; }
+
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }
+
+        [Display(Name = "Preferred Name")]
+        public string PreferredName { get; set; }
+
+        [Display(Name = "Initials")]
+        public string Initials { get; set; }
+
+        [Display(Name = "Gender")]
+        public string Gender { get; set; }
+
+        [Display(Name = "Date Of Birth")]
+        public DateTime? DateOfBirth { get; set; }
+
+        [Display(Name = "Registration Date")]
+        public DateTime? RegistrationDate { get; set; }
+
+        [Display(Name = "Phone Number")]
+        public string PhoneNumber { get; set; }
+
+        [Display(Name = "Email")]
+        public string Email { get; set; }
+
+        [Display(Name = "Site Supplier Number")]
+        public string SiteSupplierNumber { get; set; }
+
+        [Display(Name = "Supplier Number")]
+        public string SupplierNumber { get; set; }
+
+        [Display(Name = "Address Line 1")]
+        public string AddressLine1 { get; set; }
+
+        [Display(Name = "Address Line 2")]
+        public string AddressLine2 { get; set; }
+
+        [Display(Name = "City/Jurisdiction")]
+        public string CityOrJurisdiction { get; set; }
+
+        [Display(Name = "Postal Code")]
+        public string Postalcode { get; set; }
+
+        [Display(Name = "Country")]
+        public string Country { get; set; }
+
+        [Display(Name = "Mailing Address Line 1")]
+        public string MailingAddressLine1 { get; set; }
+
+        [Display(Name = "Mailing Address Line 2")]
+        public string MailingAddressLine2 { get; set; }
+
+        [Display(Name = "Mailing Jurisdiction")]
+        public string MailingJurisdiction { get; set; }
+
+        [Display(Name = "Mailing City/Jurisdiction")]
+        public string MailingCityOrJurisdiction { get; set; }
+
+        [Display(Name = "Mailing Postal code")]
+        public string MailingPostalcode { get; set; }
+
+        [Display(Name = "Mailing Province State")]
+        public string MailingProvinceState { get; set; }
+
+        [Display(Name = "Mailing Country")]
+        public string MailingCountry { get; set; }
     }
 
 #pragma warning disable CA1008 // Enums should have zero value

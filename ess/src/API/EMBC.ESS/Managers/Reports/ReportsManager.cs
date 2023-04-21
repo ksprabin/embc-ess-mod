@@ -4,10 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using AutoMapper.Execution;
 using EMBC.ESS.Resources.Metadata;
+using EMBC.ESS.Resources.Payments;
 using EMBC.ESS.Resources.Reports;
+using EMBC.ESS.Resources.Teams;
 using EMBC.ESS.Shared.Contracts;
 using EMBC.ESS.Shared.Contracts.Reports;
+using EMBC.ESS.Shared.Contracts.Teams;
 using EMBC.Utilities.Caching;
 using EMBC.Utilities.Csv;
 using EMBC.Utilities.Messaging;
@@ -17,19 +21,25 @@ namespace EMBC.ESS.Managers.Reports
     public class ReportsManager
     {
         private readonly IMapper mapper;
+        private readonly IPaymentRepository paymentRepository;
         private readonly IReportRepository reportRepository;
         private readonly IMetadataRepository metadataRepository;
+        private readonly ITeamRepository teamRepository;
         private readonly ICache cache;
         private readonly IMessagingClient messagingClient;
 
         public ReportsManager(
             IMapper mapper,
+            IPaymentRepository paymentRepository,
+            ITeamRepository teamRepository,
             IReportRepository reportRepository,
             IMetadataRepository metadataRepository,
             ICache cache,
             IMessagingClient messagingClient)
         {
             this.mapper = mapper;
+            this.paymentRepository = paymentRepository;
+            this.teamRepository = teamRepository;
             this.reportRepository = reportRepository;
             this.metadataRepository = metadataRepository;
             this.cache = cache;
@@ -158,6 +168,33 @@ namespace EMBC.ESS.Managers.Reports
             if (report == null) throw new NotFoundException("Report is not ready", query.ReportRequestId);
 
             return report;
+        }
+
+        public async Task<ReportQueryResponse> Handle(PaymentReportQuery evt)
+        {
+            var paymentQuery = new ReportQuery
+            {
+                //FileId = evt.TeamId,
+                //TaskNumber = "test123",
+            };
+
+            var lstPayments = ((SearchAllPaymentResponse)await paymentRepository.QueryAll(new SearchAllPaymentRequest
+            {
+                ByStatus = PaymentStatus.Paid
+            })).Items;
+
+            var csv = lstPayments.ToCSV(paymentQuery);
+
+            var content = Encoding.UTF8.GetBytes(csv);
+            var contentType = "text/csv";
+
+            var testResVal = new ReportQueryResponse
+            {
+                Content = content,
+                ContentType = contentType
+            };
+
+            return testResVal;
         }
     }
 }
